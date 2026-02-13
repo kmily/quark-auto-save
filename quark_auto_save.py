@@ -842,7 +842,11 @@ class Quark:
     def dir_check_and_save(self, task, pwd_id, stoken, pdir_fid="", subdir_path=""):
         tree = Tree()
         # 获取分享文件列表
-        share_file_list = self.get_detail(pwd_id, stoken, pdir_fid)["data"]["list"]
+        share_file_list_res = self.get_detail(pwd_id, stoken, pdir_fid)
+        if share_file_list_res.get("code") != 0:
+            print(f"❌ 获取分享详情失败: {share_file_list_res.get('message')}")
+            return tree
+        share_file_list = share_file_list_res["data"]["list"]
         # print("share_file_list: ", share_file_list)
 
         if not share_file_list:
@@ -856,9 +860,13 @@ class Quark:
             and subdir_path == ""
         ):  # 仅有一个文件夹
             print("🧠 该分享是一个文件夹，读取文件夹内列表")
-            share_file_list = self.get_detail(
+            share_file_list_res = self.get_detail(
                 pwd_id, stoken, share_file_list[0]["fid"]
-            )["data"]["list"]
+            )
+            if share_file_list_res.get("code") != 0:
+                print(f"❌ 获取分享详情失败: {share_file_list_res.get('message')}")
+                return tree
+            share_file_list = share_file_list_res["data"]["list"]
 
         # 获取目标目录文件列表
         savepath = re.sub(r"/{2,}", "/", f"/{task['savepath']}{subdir_path}")
