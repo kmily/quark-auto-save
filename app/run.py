@@ -66,7 +66,11 @@ def get_app_ver():
 
 
 # 文件路径
-PYTHON_PATH = "python3" if os.path.exists("/usr/bin/python3") else "python"
+if os.environ.get("VIRTUAL_ENV"):
+    PYTHON_PATH = os.path.join(os.environ.get("VIRTUAL_ENV"), "Scripts", "python.exe") if os.name == 'nt' else os.path.join(os.environ.get("VIRTUAL_ENV"), "bin", "python")
+else:
+    PYTHON_PATH = "python3" if os.path.exists("/usr/bin/python3") else "python"
+
 SCRIPT_PATH = os.environ.get("SCRIPT_PATH", "./quark_auto_save.py")
 CONFIG_PATH = os.environ.get("CONFIG_PATH", "./config/quark_config.json")
 PLUGIN_FLAGS = os.environ.get("PLUGIN_FLAGS", "")

@@ -1171,7 +1171,14 @@ def do_save(account, tasklist=[]):
         if not is_time(task):
             print(f"任务不在运行周期内，跳过")
         else:
+            # 记录最后一次运行时间
+            task['last_run_time'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
             is_new_tree = account.do_save_task(task)
+
+            if is_new_tree:
+                # 记录最后一次成功保存时间
+                task['last_success_time'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
             # 补充任务的插件配置
             def merge_dicts(a, b):
