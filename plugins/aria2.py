@@ -5,12 +5,13 @@ import requests
 class Aria2:
 
     default_config = {
-        "host_port": "172.17.0.1:6800",  # Aria2 RPC地址
+        "host_port": "172.17.0.1:6800",  # Aria2 RPC地址，填入格式支持：host:port 或 http(s)://host:port
         "secret": "",  # Aria2 RPC 密钥
         "dir": "/Downloads",  # 下载目录，需要Aria2有权限访问
     }
     default_task_config = {
         "auto_download": False,  # 是否自动添加下载任务
+        "download_subdir": False,  # 是否递归下载子目录和文件
         "save_path": "",  # 留空时跟随夸克网盘目录结构（dir/夸克路径），填写时下载到 dir/save_path/
         "pause": False,  # 添加任务后为暂停状态，不自动开始（手动下载）
     }
@@ -26,9 +27,35 @@ class Aria2:
                 else:
                     print(f"{self.plugin_name} 模块缺少必要参数: {key}")
             if self.host_port and self.secret:
-                self.rpc_url = f"http://{self.host_port}/jsonrpc"
+                self.rpc_url = self._get_rpc_url(self.host_port)
                 if self.get_version():
                     self.is_active = True
+
+    def _get_rpc_url(self, endpoint):
+        """获取 RPC URL"""
+        if "://" in endpoint:
+            scheme, url_part = endpoint.split("://", 1)
+            parts = url_part.split("/", 1)
+            host_port = parts[0]
+            path = parts[1] if len(parts) > 1 and parts[1] else "jsonrpc"
+            return f"{scheme.lower()}://{host_port}/{path}"
+        else:
+            # 默认使用 HTTP
+            return f"http://{self.host_port}/jsonrpc"
+
+    def _recursive_dir(self, account, fid, parent_path, file_fids, file_paths):
+        """递归遍历目录，获取所有文件和子目录"""
+        print(f"Aria2下载: 递归目录 {parent_path}")
+        for item in account.ls_dir(fid)["data"]["list"]:
+            item_fid = item["fid"]
+            item_name = item["file_name"]
+            item_path = f"{parent_path}/{item_name}" if parent_path else item_name
+
+            if item["dir"]:
+                self._recursive_dir(account, item_fid, item_path, file_fids, file_paths)
+            else:
+                file_fids.append(item_fid)
+                file_paths.append(item_path)
 
     def run(self, task, **kwargs):
         task_config = task.get("addition", {}).get(
@@ -47,6 +74,8 @@ class Aria2:
                 if not node.data.get("is_dir", True):
                     file_fids.append(node.data.get("fid"))
                     file_paths.append(node.data.get("path"))
+                elif not node.is_root() and task_config.get("download_subdir"):
+                    self._recursive_dir(account, node.data.get("fid"), node.data.get("path"), file_fids, file_paths)
             if not file_fids:
                 print(f"Aria2下载: 没有下载任务，跳过")
                 return
@@ -86,7 +115,9 @@ class Aria2:
         if self.secret:
             jsonrpc_data["params"].insert(0, f"token:{self.secret}")
         try:
-            response = requests.post(self.rpc_url, json=jsonrpc_data)
+            response = requests.post(
+                self.rpc_url, json=jsonrpc_data, timeout=10, verify=False
+            )
             response.raise_for_status()
             return response.json()
         except Exception as e:
