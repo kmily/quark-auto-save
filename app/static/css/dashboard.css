@@ -166,6 +166,26 @@ table.jsoneditor-tree>tbody>tr.jsoneditor-expandable:first-child {
   cursor: pointer;
 }
 
+/* 运行星期badge */
+.runweek-badges {
+  display: inline-flex;
+  gap: 2px;
+  vertical-align: middle;
+}
+
+.badge-runweek {
+  display: inline-block;
+  padding: 1px 4px;
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: #17a2b8;
+  background-color: rgba(23, 162, 184, 0.1);
+  border: 1px solid rgba(23, 162, 184, 0.3);
+  border-radius: 3px;
+  white-space: nowrap;
+}
+
 .nav-bottom {
   position: absolute;
   bottom: 32px;
