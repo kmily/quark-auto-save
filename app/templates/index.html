@@ -330,7 +330,7 @@
                     <div class="btn btn-block text-left">
                       <i class="bi bi-caret-right-fill"></i> #<span v-html="`${index+1}: ${task.taskname}`"></span>
                       <span class="runweek-badges ml-2" v-if="task.runweek && task.runweek.length > 0 && task.runweek.length < 7" :title="'运行星期：' + task.runweek.map(d => weekdays[d-1]).join('、')">
-                        <span class="badge badge-runweek" v-for="d in task.runweek" :key="d">[[ weekdays[d-1].replace('周','') ]]</span>
+                        <span class="badge badge-runweek" v-for="d in task.runweek" :key="d">{{ weekdays[d-1].replace('周','') }}</span>
                       </span>
                       <small class="text-muted ml-2" v-if="task.last_run_time" title="最后运行时间">
                          <i class="bi bi-clock"></i> {{ task.last_run_time }}
