@@ -186,6 +186,18 @@ table.jsoneditor-tree>tbody>tr.jsoneditor-expandable:first-child {
   white-space: nowrap;
 }
 
+/* 运行星期多选下拉框 - 保持单行高度 */
+select[multiple][size="1"] {
+  height: calc(1.5em + .75rem + 2px) !important;
+  overflow-y: auto;
+}
+
+select[multiple][size="1"]:focus {
+  height: auto !important;
+  min-height: calc(1.5em + .75rem + 2px);
+  max-height: 160px;
+}
+
 .nav-bottom {
   position: absolute;
   bottom: 32px;
